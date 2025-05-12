@@ -104,10 +104,10 @@ systolic #(
 	.alu_start(alu_start),
 	.cycle_num(cycle_num),
 
-	.sram_rdata_w0(sram_rdata_w0),
+	.sram_rdata_w0(sram_rdata_w0),	//每列4个数据，两列同时读
 	.sram_rdata_w1(sram_rdata_w1),
 		
-	.sram_rdata_d0(sram_rdata_d0),
+	.sram_rdata_d0(sram_rdata_d0), 	//每列4个数据，两列同时读
 	.sram_rdata_d1(sram_rdata_d1),
 
 	.matrix_index(matrix_index),

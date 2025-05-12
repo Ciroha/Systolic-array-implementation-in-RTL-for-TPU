@@ -197,10 +197,10 @@ sram_16x128b sram_16x128b_c2(
 
 
 //dump wave file
-initial begin
-  $fsdbDumpfile("tpu.fsdb"); // "gray.fsdb" can be replaced into any name you want
-  $fsdbDumpvars("+mda");              // but make sure in .fsdb format
-end
+// initial begin
+//   $fsdbDumpfile("tpu.fsdb"); // "gray.fsdb" can be replaced into any name you want
+//   $fsdbDumpvars("+mda");              // but make sure in .fsdb format
+// end
 
 //====== clock generation =====
 initial begin
@@ -242,11 +242,11 @@ initial begin
 end
 */
 initial begin
-    $readmemb("data/mat1.txt", mat1);
-    $readmemb("data/mat2.txt", mat2);
-    $readmemb("golden/golden1.txt",golden1);
-    $readmemb("golden/golden2.txt",golden2);
-    $readmemb("golden/golden3.txt",golden3);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat1.txt", mat1);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat2.txt", mat2);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden1.txt",golden1);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden2.txt",golden2);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden3.txt",golden3);
 
     #(`cycle_period);
     
@@ -304,7 +304,7 @@ initial begin
 
 	end
 	for(i = 0; i<(ARRAY_SIZE*2-1); i = i+1)begin
-		if(trans_golden3[i] == sram_16x128b_c2.mem[i]) $write("sram #c1 address: %d PASS!!\n", i[5:0]);
+		if(trans_golden3[i] == sram_16x128b_c2.mem[i]) $write("sram #c2 address: %d PASS!!\n", i[5:0]);
 		else begin
                     $write("You have wrong answer in the sram #c2 !!!\n\n");
                     $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c2.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
@@ -376,13 +376,15 @@ task data2sram;
 		end
 
 	end
-	$write("SRAM a0!!!!\n");
+	$write("SRAM A is for weight\n");
+	$write("                      --------a0-------- --------a1--------\n");
 	for(i = 0; i< 128 ; i = i + 1) begin
-                    $write("SRAM at address %d is \n%d %d %d %d  \n",i[7:0],$signed(sram_128x32b_a0.mem[i][31:24]),$signed(sram_128x32b_a0.mem[i][23:16]),$signed(sram_128x32b_a0.mem[i][15:8]),$signed(sram_128x32b_a0.mem[i][7:0]));
+        $write("SRAM at address %d is %d %d %d %d %d %d %d %d \n",i[7:0],$signed(sram_128x32b_a0.mem[i][31:24]),$signed(sram_128x32b_a0.mem[i][23:16]),$signed(sram_128x32b_a0.mem[i][15:8]),$signed(sram_128x32b_a0.mem[i][7:0]),$signed(sram_128x32b_a1.mem[i][31:24]),$signed(sram_128x32b_a1.mem[i][23:16]),$signed(sram_128x32b_a1.mem[i][15:8]),$signed(sram_128x32b_a1.mem[i][7:0]));
 	end
-	$write("SRAM b0!!!!\n");
+	$write("SRAM B is for data\n");
+	$write("                      --------b0-------- --------b1--------\n");
 	for(i = 0; i< 128 ; i = i + 1) begin
-                    $write("SRAM at address %d is \n%d %d %d %d  \n",i[7:0],$signed(sram_128x32b_b0.mem[i][31:24]),$signed(sram_128x32b_b0.mem[i][23:16]),$signed(sram_128x32b_b0.mem[i][15:8]),$signed(sram_128x32b_b0.mem[i][7:0]));
+        $write("SRAM at address %d is %d %d %d %d %d %d %d %d \n",i[7:0],$signed(sram_128x32b_b0.mem[i][31:24]),$signed(sram_128x32b_b0.mem[i][23:16]),$signed(sram_128x32b_b0.mem[i][15:8]),$signed(sram_128x32b_b0.mem[i][7:0]),$signed(sram_128x32b_b1.mem[i][31:24]),$signed(sram_128x32b_b1.mem[i][23:16]),$signed(sram_128x32b_b1.mem[i][15:8]),$signed(sram_128x32b_b1.mem[i][7:0]));
 	end
   end
 endtask	
@@ -438,6 +440,20 @@ integer this_i, this_j, this_k;
 	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
 		for(this_i=ARRAY_SIZE;this_i>0;this_i=this_i-1) begin
             		$write("%d ", $signed(trans_golden1[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
+        	end
+		$write("\n\n");
+	end
+	$write("Here shows the trans_golden2!!!\n");
+	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
+		for(this_i=ARRAY_SIZE;this_i>0;this_i=this_i-1) begin
+            		$write("%d ", $signed(trans_golden2[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
+        	end
+		$write("\n\n");
+	end
+	$write("Here shows the trans_golden3!!!\n");
+	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
+		for(this_i=ARRAY_SIZE;this_i>0;this_i=this_i-1) begin
+            		$write("%d ", $signed(trans_golden3[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
         	end
 		$write("\n\n");
 	end
