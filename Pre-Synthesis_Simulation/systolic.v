@@ -3,7 +3,7 @@ module systolic#(
     parameter SRAM_DATA_WIDTH = 32,
     parameter DATA_WIDTH = 8,
     // --- 显式添加累加深度参数 ---
-    parameter K_ACCUM_DEPTH = 24   // 用户可配置的累加深度，默认为原始行为 (K=8)
+    parameter K_ACCUM_DEPTH = 8   // 用户可配置的累加深度，默认为原始行为 (K=8)
 )
 (
     input clk,

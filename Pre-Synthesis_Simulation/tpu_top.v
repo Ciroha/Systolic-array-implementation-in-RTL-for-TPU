@@ -2,7 +2,8 @@ module tpu_top#(
 	parameter ARRAY_SIZE = 8,
 	parameter SRAM_DATA_WIDTH = 32,
 	parameter DATA_WIDTH = 8,
-	parameter OUTPUT_DATA_WIDTH = 16
+	parameter OUTPUT_DATA_WIDTH = 16,
+	parameter K_ACCUM_DEPTH = 8   // 用户可配置的累加深度，默认为原始行为 (K=8)
 )
 (
 	input clk,
@@ -44,7 +45,7 @@ localparam ORI_WIDTH = DATA_WIDTH+DATA_WIDTH+5;
 wire [6:0] addr_serial_num;
 
 //----quantized parameter----
-wire signed [ARRAY_SIZE*ORI_WIDTH-1:0] ori_data;
+wire signed [(ARRAY_SIZE * (DATA_WIDTH + DATA_WIDTH + ((K_ACCUM_DEPTH == 1) ? 0 : $clog2(K_ACCUM_DEPTH)) + 1)) - 1:0] ori_data;
 wire signed [ARRAY_SIZE*OUTPUT_DATA_WIDTH-1:0] quantized_data;
 
 //-----systolic parameter----
