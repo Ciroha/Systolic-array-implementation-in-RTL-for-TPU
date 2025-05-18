@@ -1,4 +1,4 @@
-//-----this module is for weiting data out------
+//-----this module is for writing data out------
 
 module write_out#(
 	parameter ARRAY_SIZE = 8,
@@ -75,29 +75,62 @@ end
 
 
 //for a0, write_enable_X0 = 0 means write
+// always@(*) begin
+// 	if(sram_write_enable) begin
+// 		case(data_set)
+// 			0: begin
+// 				if(matrix_index < ARRAY_SIZE) begin
+// 					sram_write_enable_a0_nx = 0;
+// 					for(i=0; i<ARRAY_SIZE; i=i+1) begin
+// 						if(i<=matrix_index)
+// 							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[i*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
+// 						else
+// 							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
+// 					end
+// 					sram_waddr_a_nx = matrix_index;
+// 				end
+// 				else begin							//mix type
+// 					sram_write_enable_a0_nx = 0;
+// 				 	for(i=0; i<ARRAY_SIZE; i=i+1) begin
+// 						if(i < 15-matrix_index)
+// 							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[(i+1+(matrix_index-ARRAY_SIZE))*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
+// 						else
+// 							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
+// 					end
+// 					sram_waddr_a_nx = matrix_index;
+// 				end
+// 			end
+		
+// 			default: begin
+// 				sram_write_enable_a0_nx = 1;
+// 				for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 					sram_wdata_a_nx[i] = 0;
+// 				sram_waddr_a_nx = 0;
+// 			end
+// 		endcase
+// 	end
+// 	else begin
+// 		sram_write_enable_a0_nx = 1;
+// 		for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 			sram_wdata_a_nx[i] = 0;
+// 		sram_waddr_a_nx = 0;
+// 	end
+// end
+
 always@(*) begin
 	if(sram_write_enable) begin
 		case(data_set)
 			0: begin
 				if(matrix_index < ARRAY_SIZE) begin
 					sram_write_enable_a0_nx = 0;
-					for(i=0; i<ARRAY_SIZE; i=i+1) begin
-						if(i<=matrix_index)
-							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[i*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
-						else
-							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
-					end
+					sram_wdata_a_nx = quantized_data;
 					sram_waddr_a_nx = matrix_index;
 				end
-				else begin							//mix type
-					sram_write_enable_a0_nx = 0;
-				 	for(i=0; i<ARRAY_SIZE; i=i+1) begin
-						if(i < 15-matrix_index)
-							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[(i+1+(matrix_index-ARRAY_SIZE))*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
-						else
-							sram_wdata_a_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
-					end
-					sram_waddr_a_nx = matrix_index;
+				else begin
+					sram_write_enable_a0_nx = 1;
+					for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+						sram_wdata_a_nx[i] = 0;
+					sram_waddr_a_nx = 0;
 				end
 			end
 		
@@ -118,6 +151,63 @@ always@(*) begin
 end
 
 //for b0, write_enable_X0 = 0 means write
+// always@(*) begin
+// 	if(sram_write_enable) begin
+// 		case(data_set)
+// 			0: begin
+// 				if(matrix_index < ARRAY_SIZE) begin			//all occupied by a
+// 					sram_write_enable_b0_nx = 1;
+// 					for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 						sram_wdata_b_nx[i] = 0;
+// 					sram_waddr_b_nx = 0;
+// 				end
+// 				else begin														//mix type
+// 					sram_write_enable_b0_nx = 0;
+// 					for(i=0; i<ARRAY_SIZE; i=i+1) begin
+// 						if(i <= matrix_index-ARRAY_SIZE)
+// 							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[i*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
+// 						else
+// 							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
+// 					end	
+// 					sram_waddr_b_nx = matrix_index - ARRAY_SIZE;
+// 				end
+// 			end
+		
+// 			1: begin
+// 				if(matrix_index < ARRAY_SIZE) begin
+// 					sram_write_enable_b0_nx = 0;
+// 					for(i=0; i<ARRAY_SIZE; i=i+1) begin
+// 						if(i < ARRAY_SIZE-matrix_index-1)
+// 							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[(i+1+matrix_index)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
+// 						else
+// 							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
+// 					end
+// 					sram_waddr_b_nx = matrix_index + ARRAY_SIZE;	
+// 				end
+// 				else begin
+// 					sram_write_enable_b0_nx = 1;
+// 					for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1)
+// 						sram_wdata_b_nx[i] = 0;
+// 					sram_waddr_b_nx = 0;
+// 				end
+// 			end
+
+// 			default: begin
+// 				sram_write_enable_b0_nx = 1;
+// 				for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 					sram_wdata_b_nx[i] = 0;
+// 				sram_waddr_b_nx = 0;
+// 			end
+// 		endcase
+// 	end
+// 	else begin
+// 		sram_write_enable_b0_nx = 1;
+// 		for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 			sram_wdata_b_nx[i] = 0;
+// 		sram_waddr_b_nx = 0;
+// 	end
+// end
+
 always@(*) begin
 	if(sram_write_enable) begin
 		case(data_set)
@@ -130,32 +220,8 @@ always@(*) begin
 				end
 				else begin														//mix type
 					sram_write_enable_b0_nx = 0;
-					for(i=0; i<ARRAY_SIZE; i=i+1) begin
-						if(i <= matrix_index-ARRAY_SIZE)
-							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[i*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
-						else
-							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
-					end	
+					sram_wdata_b_nx = quantized_data;
 					sram_waddr_b_nx = matrix_index - ARRAY_SIZE;
-				end
-			end
-		
-			1: begin
-				if(matrix_index < ARRAY_SIZE) begin
-					sram_write_enable_b0_nx = 0;
-					for(i=0; i<ARRAY_SIZE; i=i+1) begin
-						if(i < ARRAY_SIZE-matrix_index-1)
-							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[(i+1+matrix_index)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
-						else
-							sram_wdata_b_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
-					end
-					sram_waddr_b_nx = matrix_index + ARRAY_SIZE;	
-				end
-				else begin
-					sram_write_enable_b0_nx = 1;
-					for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1)
-						sram_wdata_b_nx[i] = 0;
-					sram_waddr_b_nx = 0;
 				end
 			end
 
@@ -176,29 +242,62 @@ always@(*) begin
 end
 
 //for c0, write_enable_X0 = 0 means write
+// always@(*) begin
+// 	if(sram_write_enable) begin
+// 		case(data_set)
+// 			1: begin
+// 				if(matrix_index < ARRAY_SIZE) begin			//all occupied by a
+// 					sram_write_enable_c0_nx = 0;
+// 					for(i=0; i<ARRAY_SIZE; i=i+1) begin
+// 						if(i<=matrix_index)
+// 							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[i*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
+// 						else
+// 							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
+// 					end
+// 					sram_waddr_c_nx = matrix_index;
+// 				end
+// 				else begin														//mix type
+// 					sram_write_enable_c0_nx = 0;
+// 					for(i=0; i<ARRAY_SIZE; i=i+1) begin
+// 						if(i < 15-matrix_index)
+// 							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[(i+1+(matrix_index-ARRAY_SIZE))*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
+// 						else
+// 							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
+// 					end	
+// 					sram_waddr_c_nx = matrix_index;
+// 				end
+// 			end
+
+// 			default: begin
+// 				sram_write_enable_c0_nx = 1;
+// 				for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 					sram_wdata_c_nx[i] = 0;
+// 				sram_waddr_c_nx = 0;
+// 			end
+// 		endcase
+// 	end
+// 	else begin
+// 		sram_write_enable_c0_nx = 1;
+// 		for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+// 			sram_wdata_c_nx[i] = 0;
+// 		sram_waddr_c_nx = 0;
+// 	end
+// end
+
 always@(*) begin
 	if(sram_write_enable) begin
 		case(data_set)
 			1: begin
 				if(matrix_index < ARRAY_SIZE) begin			//all occupied by a
 					sram_write_enable_c0_nx = 0;
-					for(i=0; i<ARRAY_SIZE; i=i+1) begin
-						if(i<=matrix_index)
-							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[i*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
-						else
-							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
-					end
+					sram_wdata_c_nx = quantized_data;
 					sram_waddr_c_nx = matrix_index;
 				end
 				else begin														//mix type
-					sram_write_enable_c0_nx = 0;
-					for(i=0; i<ARRAY_SIZE; i=i+1) begin
-						if(i < 15-matrix_index)
-							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = quantized_data[(i+1+(matrix_index-ARRAY_SIZE))*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH];
-						else
-							sram_wdata_c_nx[(MAX_INDEX-i)*OUTPUT_DATA_WIDTH +: OUTPUT_DATA_WIDTH] = 0;
-					end	
-					sram_waddr_c_nx = matrix_index;
+					sram_write_enable_c0_nx = 1;
+					for(i=0; i<ARRAY_SIZE*OUTPUT_DATA_WIDTH; i=i+1) 
+						sram_wdata_c_nx[i] = 0;
+					sram_waddr_c_nx = 0;
 				end
 			end
 

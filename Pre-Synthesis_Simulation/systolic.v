@@ -46,6 +46,7 @@ localparam WAVEFRONT2_START_OFFSET = INITIAL_CTRL_OFFSET + K_ACCUM_DEPTH;
 //                   从而使得每个PE的累加器复位间隔为 K_ACCUM_DEPTH。
 //                   处理 K_ACCUM_DEPTH=0 的情况以避免模0（尽管K通常>=1）。
 localparam WAVEFRONT_MODULO = (K_ACCUM_DEPTH == 0) ? 1 : (K_ACCUM_DEPTH * 2);
+localparam op_mode = 1'b1; // 1'b0: MMM乘法器，1'b1: MVM
 
 
 // --- 内部寄存器和线网声明 (使用新的 OUTCOME_WIDTH) ---
@@ -74,34 +75,77 @@ always@(posedge clk) begin
     end
     else begin
         if(alu_start) begin
-            //weight shifting(a0)
-            // 使用参数化DATA_WIDTH处理数据加载，假设SRAM_DATA_WIDTH是DATA_WIDTH的整数倍
-            // 这里假设每32位SRAM输入包含 32/DATA_WIDTH 个数据项
-            for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE ; i=i+1) begin // 确保不越界 ARRAY_SIZE
-                 // sram_rdata_w0 和 w1 填充 weight_queue[0] 的不同部分
-                 // 假设填充 weight_queue[0][0] 到 weight_queue[0][ARRAY_SIZE-1]
-                 // 如果 ITEMS_PER_SRAM_WORD * 2 < ARRAY_SIZE, 需要更多SRAM输入或调整逻辑
-                if (i < ARRAY_SIZE)
-                    weight_queue[0][i] <= sram_rdata_w0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
-                if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
-                    weight_queue[0][ITEMS_PER_SRAM_WORD + i] <= sram_rdata_w1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
-            end
-            
-            for(i=1; i<ARRAY_SIZE; i=i+1) 
-                for(j=0; j<ARRAY_SIZE; j=j+1) 
-                    weight_queue[i][j] <= weight_queue[i-1][j];
+            if (op_mode == 1'b0) begin
+                // MMM乘法器模式
+                //weight shifting(a0)
+                // 使用参数化DATA_WIDTH处理数据加载，假设SRAM_DATA_WIDTH是DATA_WIDTH的整数倍
+                // 这里假设每32位SRAM输入包含 32/DATA_WIDTH 个数据项
+                for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE ; i=i+1) begin // 确保不越界 ARRAY_SIZE
+                    // sram_rdata_w0 和 w1 填充 weight_queue[0] 的不同部分
+                    // 假设填充 weight_queue[0][0] 到 weight_queue[0][ARRAY_SIZE-1]
+                    // 如果 ITEMS_PER_SRAM_WORD * 2 < ARRAY_SIZE, 需要更多SRAM输入或调整逻辑
+                    if (i < ARRAY_SIZE)
+                        weight_queue[0][i] <= sram_rdata_w0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                    if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
+                        weight_queue[0][ITEMS_PER_SRAM_WORD + i] <= sram_rdata_w1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                end
                 
-            //data shifting(b0)
-            for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE; i=i+1) begin // 确保不越界 ARRAY_SIZE
-                if (i < ARRAY_SIZE)
-                    data_queue[i][0] <= sram_rdata_d0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
-                if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
-                    data_queue[ITEMS_PER_SRAM_WORD + i][0] <= sram_rdata_d1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                for(i=1; i<ARRAY_SIZE; i=i+1) 
+                    for(j=0; j<ARRAY_SIZE; j=j+1) 
+                        weight_queue[i][j] <= weight_queue[i-1][j];
+                    
+                //data shifting(b0)
+                for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE; i=i+1) begin // 确保不越界 ARRAY_SIZE
+                    if (i < ARRAY_SIZE)
+                        data_queue[i][0] <= sram_rdata_d0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                    if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
+                        data_queue[ITEMS_PER_SRAM_WORD + i][0] <= sram_rdata_d1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                end
+                
+                for(i=0; i<ARRAY_SIZE; i=i+1) 
+                    for(j=1; j<ARRAY_SIZE; j=j+1) 
+                        data_queue[i][j] <= data_queue[i][j-1];
             end
-            
-            for(i=0; i<ARRAY_SIZE; i=i+1) 
-                for(j=1; j<ARRAY_SIZE; j=j+1) 
-                    data_queue[i][j] <= data_queue[i][j-1];
+            else begin
+                // MVM模式
+                //weight vector
+                // copy逻辑
+                for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE ; i=i+1) begin // 确保不越界 ARRAY_SIZE
+                    if (i < ARRAY_SIZE)
+                        weight_queue[0][i] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];
+                    if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
+                        weight_queue[0][ITEMS_PER_SRAM_WORD + i] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];
+                end
+                
+                // 这里假设 weight_queue[0] 是一个向量，包含了所有的权重
+                // weight_queue[0][0] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];
+                for(i=1; i<ARRAY_SIZE; i=i+1) 
+                    for(j=0; j<ARRAY_SIZE; j=j+1) 
+                        weight_queue[i][j] <= weight_queue[i-1][j];
+
+                //data matrix
+                for(j=0; j<ARRAY_SIZE; j=j+1) begin
+                    for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE; i=i+1) begin // 确保不越界 ARRAY_SIZE
+                        if (i < ARRAY_SIZE)
+                            data_queue[i][j] <= sram_rdata_d0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                        if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
+                            data_queue[ITEMS_PER_SRAM_WORD + i][j] <= sram_rdata_d1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                    end
+                end
+
+                // for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE; i=i+1) begin // 确保不越界 ARRAY_SIZE
+                //     if (i < ARRAY_SIZE)
+                //         data_queue[i][0] <= sram_rdata_d0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                //     if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
+                //         data_queue[ITEMS_PER_SRAM_WORD + i][0] <= sram_rdata_d1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
+                // end
+                
+                //TODO： 分发逻辑有误
+                //切断横向data连接，data queue全部从第0列开始
+                // for(i=0; i<ARRAY_SIZE; i=i+1) 
+                //     for(j=1; j<ARRAY_SIZE; j=j+1) 
+                //         data_queue[i][j] <= data_queue[i][0];
+            end
         end
     end
 end
@@ -136,14 +180,15 @@ always@(*) begin
 
                 // --- 使用新的控制参数修改条件判断 ---
                 // 条件：PE(i,j) 开始计算新输出元素的第一个乘积 (复位累加器)
-                if ( (cycle_num >= WAVEFRONT1_START_OFFSET && (i+j) == (cycle_num - WAVEFRONT1_START_OFFSET) % WAVEFRONT_MODULO) || 
-                     (cycle_num >= WAVEFRONT2_START_OFFSET && (i+j) == (cycle_num - WAVEFRONT2_START_OFFSET) % WAVEFRONT_MODULO) ) begin
+                //TODO 恢复矩阵矩阵乘法的i+j逻辑
+                if ( (cycle_num >= WAVEFRONT1_START_OFFSET && (i) == (cycle_num - WAVEFRONT1_START_OFFSET) % WAVEFRONT_MODULO) || 
+                     (cycle_num >= WAVEFRONT2_START_OFFSET && (i) == (cycle_num - WAVEFRONT2_START_OFFSET) % WAVEFRONT_MODULO) ) begin
                     // 第一个乘积，直接赋值，注意符号扩展到新的 OUTCOME_WIDTH
                     matrix_mul_2D_nx[i][j] = {{OUTCOME_WIDTH - (DATA_WIDTH*2){mul_result[DATA_WIDTH*2-1]}}, mul_result};
                 end
                 // 条件：PE(i,j) 进行累加 (仅当K > 1时)
                 // (i+j) <= (cycle_num-1) 是一个基本的数据到达和有效性检查
-                else if ( K_ACCUM_DEPTH > 1 && cycle_num >= 1 && (i+j) <= (cycle_num-1) ) begin
+                else if ( K_ACCUM_DEPTH > 1 && cycle_num >= 1 && i <= (cycle_num-1) ) begin
                     // 累加后续乘积，注意符号扩展
                     matrix_mul_2D_nx[i][j] = matrix_mul_2D[i][j] + {{OUTCOME_WIDTH - (DATA_WIDTH*2){mul_result[DATA_WIDTH*2-1]}}, mul_result};
                 end
@@ -169,19 +214,33 @@ always@(*) begin
 
     mul_outcome = 'bz; // 推荐为输出赋一个明确的默认值
 
+    // for(i=0; i<ARRAY_SIZE; i=i+1) begin
+    //     for(j=0; j<ARRAY_SIZE-i; j=j+1) begin
+    //         if(i+j == upper_bound)
+    //             mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
+    //     end
+    // end
+    
     for(i=0; i<ARRAY_SIZE; i=i+1) begin
-        for(j=0; j<ARRAY_SIZE-i; j=j+1) begin
-            if(i+j == upper_bound)
-                mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
+        for(j=0; j<ARRAY_SIZE; j=j+1) begin
+            if(i == upper_bound)
+                mul_outcome[(j*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
         end
     end
 
-    for(i=1; i<ARRAY_SIZE; i=i+1) begin
-        for(j=ARRAY_SIZE-i; j<ARRAY_SIZE; j=j+1) begin
-            if(i+j == lower_bound)
-                mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
-        end
-    end
+    // for(i=1; i<ARRAY_SIZE; i=i+1) begin
+    //     for(j=ARRAY_SIZE-i; j<ARRAY_SIZE; j=j+1) begin
+    //         if(i+j == lower_bound)
+    //             mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
+    //     end
+    // end
+
+    // for(i=1; i<ARRAY_SIZE; i=i+1) begin
+    //     for(j=ARRAY_SIZE-i; j<ARRAY_SIZE; j=j+1) begin
+    //         if(i+j == lower_bound)
+    //             mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
+    //     end
+    // end
 end
 
 endmodule

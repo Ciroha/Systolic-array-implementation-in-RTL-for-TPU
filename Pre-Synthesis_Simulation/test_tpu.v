@@ -242,20 +242,20 @@ initial begin
 end
 */
 initial begin
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat1.txt", mat1);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat2.txt", mat2);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden1.txt",golden1);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden2.txt",golden2);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden3.txt",golden3);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat1_test.txt", mat1);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat2_test.txt", mat2);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden1_test.txt",golden1);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden2_test.txt",golden2);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden3_test.txt",golden3);
 
     #(`cycle_period);
     
 	data2sram;
 	golden_transform;
-        $write("|\n");
-        $write("Three input groups of matrix\n");
-        $write("|\n");
-        display_data;  
+        // $write("|\n");
+        // $write("Three input groups of matrix\n");
+        // $write("|\n");
+        // display_data;  
 
         /////////////////////////////////////////////////////////
         

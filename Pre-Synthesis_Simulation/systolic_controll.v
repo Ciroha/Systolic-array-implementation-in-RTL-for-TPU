@@ -157,7 +157,7 @@ always@(*) begin
 		ROLLING: begin
 			alu_start = 1;
 			cycle_num_nx = cycle_num + 1;
-			if(cycle_num >= ARRAY_SIZE+1) begin
+			if(cycle_num >= ARRAY_SIZE + 1) begin
 				if(matrix_index == 15) begin
 					matrix_index_nx = 0;
 					data_set_nx = data_set + 1;
