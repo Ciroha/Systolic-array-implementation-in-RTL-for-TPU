@@ -2,7 +2,8 @@
 
 module systolic_controll#(
 	parameter ARRAY_SIZE = 8,
-	parameter K_ACCUM_DEPTH = 8
+	parameter K_ACCUM_DEPTH = 8,
+	parameter DATA_SET = 1 //数据集的个数
 )
 (
 	input clk,
@@ -82,7 +83,7 @@ always@(*) begin
 		end
 
 		ROLLING: begin
-			if(matrix_index == K_ACCUM_DEPTH - 1 && data_set == 2) begin	//当运算到累加深度且数据集结束时，代表所有运算结束
+			if(matrix_index == K_ACCUM_DEPTH - 1 && data_set == DATA_SET -1) begin	//当运算到累加深度且数据集结束时，代表所有运算结束
 				state_nx = IDLE;
 				tpu_done_nx = 1;
 			end

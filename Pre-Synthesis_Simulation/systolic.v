@@ -109,16 +109,15 @@ always@(posedge clk) begin
             else begin
                 // MVM模式
                 //weight vector
-                // copy逻辑
+                // copy逻辑 向量广播模块
                 for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE ; i=i+1) begin // 确保不越界 ARRAY_SIZE
                     if (i < ARRAY_SIZE)
-                        weight_queue[0][i] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];
+                        weight_queue[0][i] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];  //全部使用第w_0的第0列的数据
                     if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
-                        weight_queue[0][ITEMS_PER_SRAM_WORD + i] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];
+                        weight_queue[0][ITEMS_PER_SRAM_WORD + i] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];    //全部使用第0列的数据
                 end
                 
-                // 这里假设 weight_queue[0] 是一个向量，包含了所有的权重
-                // weight_queue[0][0] <= sram_rdata_w0[SRAM_DATA_WIDTH -1 -: DATA_WIDTH];
+                // weight shifting
                 for(i=1; i<ARRAY_SIZE; i=i+1) 
                     for(j=0; j<ARRAY_SIZE; j=j+1) 
                         weight_queue[i][j] <= weight_queue[i-1][j];
@@ -132,19 +131,6 @@ always@(posedge clk) begin
                             data_queue[ITEMS_PER_SRAM_WORD + i][j] <= sram_rdata_d1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
                     end
                 end
-
-                // for(i=0; i < ITEMS_PER_SRAM_WORD && i < ARRAY_SIZE; i=i+1) begin // 确保不越界 ARRAY_SIZE
-                //     if (i < ARRAY_SIZE)
-                //         data_queue[i][0] <= sram_rdata_d0[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
-                //     if (ITEMS_PER_SRAM_WORD + i < ARRAY_SIZE) // 确保不越界
-                //         data_queue[ITEMS_PER_SRAM_WORD + i][0] <= sram_rdata_d1[SRAM_DATA_WIDTH - DATA_WIDTH*i -1 -: DATA_WIDTH];
-                // end
-                
-                //TODO： 分发逻辑有误
-                //切断横向data连接，data queue全部从第0列开始
-                // for(i=0; i<ARRAY_SIZE; i=i+1) 
-                //     for(j=1; j<ARRAY_SIZE; j=j+1) 
-                //         data_queue[i][j] <= data_queue[i][0];
             end
         end
     end
@@ -181,8 +167,7 @@ always@(*) begin
                 // --- 使用新的控制参数修改条件判断 ---
                 // 条件：PE(i,j) 开始计算新输出元素的第一个乘积 (复位累加器)
                 //TODO 恢复矩阵矩阵乘法的i+j逻辑
-                if ( (cycle_num >= WAVEFRONT1_START_OFFSET && (i) == (cycle_num - WAVEFRONT1_START_OFFSET) % WAVEFRONT_MODULO) || 
-                     (cycle_num >= WAVEFRONT2_START_OFFSET && (i) == (cycle_num - WAVEFRONT2_START_OFFSET) % WAVEFRONT_MODULO) ) begin
+                if (cycle_num >= WAVEFRONT2_START_OFFSET && i == (cycle_num - WAVEFRONT2_START_OFFSET) % K_ACCUM_DEPTH) begin   //控制累加器复位，只有当完成了一个k_accum_depth的计算后，才会复位
                     // 第一个乘积，直接赋值，注意符号扩展到新的 OUTCOME_WIDTH
                     matrix_mul_2D_nx[i][j] = {{OUTCOME_WIDTH - (DATA_WIDTH*2){mul_result[DATA_WIDTH*2-1]}}, mul_result};
                 end
@@ -212,14 +197,7 @@ always@(*) begin
         lower_bound = matrix_index;
     end
 
-    mul_outcome = 'bz; // 推荐为输出赋一个明确的默认值
-
-    // for(i=0; i<ARRAY_SIZE; i=i+1) begin
-    //     for(j=0; j<ARRAY_SIZE-i; j=j+1) begin
-    //         if(i+j == upper_bound)
-    //             mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
-    //     end
-    // end
+    mul_outcome = 1'b0; // 默认输出为0
     
     for(i=0; i<ARRAY_SIZE; i=i+1) begin
         for(j=0; j<ARRAY_SIZE; j=j+1) begin
@@ -227,20 +205,6 @@ always@(*) begin
                 mul_outcome[(j*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
         end
     end
-
-    // for(i=1; i<ARRAY_SIZE; i=i+1) begin
-    //     for(j=ARRAY_SIZE-i; j<ARRAY_SIZE; j=j+1) begin
-    //         if(i+j == lower_bound)
-    //             mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
-    //     end
-    // end
-
-    // for(i=1; i<ARRAY_SIZE; i=i+1) begin
-    //     for(j=ARRAY_SIZE-i; j<ARRAY_SIZE; j=j+1) begin
-    //         if(i+j == lower_bound)
-    //             mul_outcome[(i*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
-    //     end
-    // end
 end
 
 endmodule

@@ -10,6 +10,8 @@ localparam OUT_DATA_WIDTH = 16;
 localparam SRAM_DATA_WIDTH = 32;
 localparam WEIGHT_NUM = 25, WEIGHT_WIDTH = 4;
 localparam ARRAY_SIZE = 8;
+localparam K_ACCUM_DEPTH = 8;
+localparam DATA_SET = 1;	//数据集的个数
 
 //====== module I/O =====
 reg clk;
@@ -282,6 +284,13 @@ initial begin
         end
 
 
+	
+	// show_result;
+	$write("SRAM C is for result\n");
+	$write("                      --------c0-------- --------c1--------\n");
+	for(i = 0; i< 15 ; i = i + 1) begin
+        $write("Your answer at address %d is \n%d %d %d %d %d %d %d %d \n",i[5:0],$signed(sram_16x128b_c0.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-4)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-5)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-6)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-7)*16-1)-:OUT_DATA_WIDTH]));
+	end
 
 	// test our three sets of answer!!!
 	for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
@@ -390,50 +399,14 @@ task data2sram;
   end
 endtask	
 
-task golden_transform;
-integer this_i, this_j, this_k;
-  begin
-	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
-		trans_golden1[this_k] = 0;
-		trans_golden2[this_k] = 0;
-		trans_golden3[this_k] = 0;
-	end
-	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
-		for(this_i=0;this_i<ARRAY_SIZE;this_i=this_i+1) begin
-            		for(this_j=0;this_j<ARRAY_SIZE;this_j=this_j+1) begin
-				if((this_i+this_j)==this_k)begin
-					trans_golden1[this_k] = {golden1[this_i][((this_j+1)*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH], trans_golden1[this_k][(8*16-1)-:(7*OUT_DATA_WIDTH)]};
-					trans_golden2[this_k] = {golden2[this_i][((this_j+1)*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH], trans_golden2[this_k][(8*16-1)-:(7*OUT_DATA_WIDTH)]};
-					trans_golden3[this_k] = {golden3[this_i][((this_j+1)*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH], trans_golden3[this_k][(8*16-1)-:(7*OUT_DATA_WIDTH)]};
-				end 
-            		end
-        	end
-	end
-	$write("Here shows the trans_golden1!!!\n");
-	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
-		for(this_i=ARRAY_SIZE;this_i>0;this_i=this_i-1) begin
-            		$write("%d ", $signed(trans_golden1[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
-        	end
-		$write("\n\n");
-	end
-	$write("Here shows the trans_golden2!!!\n");
-	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
-		for(this_i=ARRAY_SIZE;this_i>0;this_i=this_i-1) begin
-            		$write("%d ", $signed(trans_golden2[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
-        	end
-		$write("\n\n");
-	end
-	$write("Here shows the trans_golden3!!!\n");
-	for(this_k=0; this_k<(ARRAY_SIZE*2-1);this_k = this_k +1)begin	  
-		for(this_i=ARRAY_SIZE;this_i>0;this_i=this_i-1) begin
-            		$write("%d ", $signed(trans_golden3[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
-        	end
-		$write("\n\n");
-	end
-
-  end
-endtask 
-
+// task show_result;
+// 	integer i;
+// 	$write("SRAM C is for result\n");
+// 	$write("                      --------c0-------- --------c1--------\n");
+// 	for(i = 0; i< 16 ; i = i + 1) begin
+//         $write("Your answer at address %d is \n%d %d %d %d %d %d %d %d \n",i[5:0],$signed(sram_16x128b_c0.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-4)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-5)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-6)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-7)*16-1)-:OUT_DATA_WIDTH]));
+// 	end
+// endtask
 
 task golden_show;
 integer this_i, this_j, this_k;

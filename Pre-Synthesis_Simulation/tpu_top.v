@@ -3,7 +3,8 @@ module tpu_top#(
 	parameter SRAM_DATA_WIDTH = 32,
 	parameter DATA_WIDTH = 8,
 	parameter OUTPUT_DATA_WIDTH = 16,
-	parameter K_ACCUM_DEPTH = 8   // 用户可配置的累加深度，默认为原始行为 (K=8)
+	parameter K_ACCUM_DEPTH = 24,   // 用户可配置的累加深度，默认为原始行为 (K=8)
+	parameter DATA_SET = 1          //数据集的个数
 )
 (
 	input clk,
@@ -80,8 +81,8 @@ addr_sel addr_sel
 //----quantize module----
 quantize #(
 	.ARRAY_SIZE(ARRAY_SIZE),
-	.SRAM_DATA_WIDTH(SRAM_DATA_WIDTH),
 	.DATA_WIDTH(DATA_WIDTH),
+	.K_ACCUM_DEPTH(K_ACCUM_DEPTH),       // <--- 新增: 与systolic模块同步的累加深度
 	.OUTPUT_DATA_WIDTH(OUTPUT_DATA_WIDTH)
 ) quantize
 (
@@ -96,7 +97,8 @@ quantize #(
 systolic #(
 	.ARRAY_SIZE(ARRAY_SIZE),
 	.SRAM_DATA_WIDTH(SRAM_DATA_WIDTH),
-	.DATA_WIDTH(DATA_WIDTH)
+	.DATA_WIDTH(DATA_WIDTH),
+	.K_ACCUM_DEPTH(K_ACCUM_DEPTH)
 ) systolic
 (
 	//input
@@ -119,7 +121,9 @@ systolic #(
 
 //----systolic_controller module----
 systolic_controll  #(
-	.ARRAY_SIZE(ARRAY_SIZE)
+	.ARRAY_SIZE(ARRAY_SIZE),
+	.K_ACCUM_DEPTH(K_ACCUM_DEPTH),
+	.DATA_SET(DATA_SET) //数据集的个数
 ) systolic_controll
 (
 	//input
@@ -140,7 +144,8 @@ systolic_controll  #(
 //----write_out module----
 write_out #(
 	.ARRAY_SIZE(ARRAY_SIZE),
-	.OUTPUT_DATA_WIDTH(OUTPUT_DATA_WIDTH)
+	.OUTPUT_DATA_WIDTH(OUTPUT_DATA_WIDTH),
+	.K_ACCUM_DEPTH(K_ACCUM_DEPTH)
 ) write_out
 (
 	//input
