@@ -251,7 +251,8 @@ initial begin
     #(`cycle_period);
     
 	data2sram;
-	golden_transform;
+	// golden_transform;
+	golden_show;
         // $write("|\n");
         // $write("Three input groups of matrix\n");
         // $write("|\n");
@@ -283,37 +284,37 @@ initial begin
 
 
 	// test our three sets of answer!!!
-	for(i = 0; i<(ARRAY_SIZE*2-1); i = i+1)begin
-		if(trans_golden1[i] == sram_16x128b_c0.mem[i]) $write("sram #c0 address: %d PASS!!\n", i[5:0]);
+	for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
+		if(golden1[i] == sram_16x128b_c0.mem[i]) $write("sram #c0 address: %d PASS!!\n", i[5:0]);
 		else begin
                     $write("You have wrong answer in the sram #c0 !!!\n\n");
                     $write("Your answer at address %d is \n%d %d %d %d %d %d %d %d \n",i[5:0],$signed(sram_16x128b_c0.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-4)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-5)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-6)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c0.mem[i][((ARRAY_SIZE-7)*16-1)-:OUT_DATA_WIDTH]));
-                    $write("But the golden answer is  \n%d %d %d %d %d %d %d %d \n",$signed(trans_golden1[i][((ARRAY_SIZE)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-4)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-5)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-6)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden1[i][((ARRAY_SIZE-7)*16-1)-:OUT_DATA_WIDTH]));
+                    $write("But the golden answer is  \n%d %d %d %d %d %d %d %d \n",$signed(golden1[i][((ARRAY_SIZE)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-4)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-5)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-6)*16-1)-:OUT_DATA_WIDTH]),$signed(golden1[i][((ARRAY_SIZE-7)*16-1)-:OUT_DATA_WIDTH]));
                     $finish;
                 end
 
 	end
-	for(i = 0; i<(ARRAY_SIZE*2-1); i = i+1)begin
-		if(trans_golden2[i] == sram_16x128b_c1.mem[i]) $write("sram #c1 address: %d PASS!!\n", i[5:0]);
+	for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
+		if(golden2[i] == sram_16x128b_c1.mem[i]) $write("sram #c1 address: %d PASS!!\n", i[5:0]);
 		else begin
                     $write("You have wrong answer in the sram #c1 !!!\n\n");
                     $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c1.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
-                    $write("But the golden answer is  \n%d %d %d %d \n",$signed(trans_golden2[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden2[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden2[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden2[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
+                    $write("But the golden answer is  \n%d %d %d %d \n",$signed(golden2[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
                     $finish;
                 end
 
 	end
-	for(i = 0; i<(ARRAY_SIZE*2-1); i = i+1)begin
-		if(trans_golden3[i] == sram_16x128b_c2.mem[i]) $write("sram #c2 address: %d PASS!!\n", i[5:0]);
+	for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
+		if(golden3[i] == sram_16x128b_c2.mem[i]) $write("sram #c2 address: %d PASS!!\n", i[5:0]);
 		else begin
                     $write("You have wrong answer in the sram #c2 !!!\n\n");
                     $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c2.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
-                    $write("But the golden answer is  \n%d %d %d %d \n",$signed(trans_golden3[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden3[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden3[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(trans_golden3[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
+                    $write("But the golden answer is  \n%d %d %d %d \n",$signed(golden3[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
                     $finish;
                 end
 
 	end
-      
+    //TODO cycle_cnt逻辑有点问题
     $display("Total cycle count C after three matrix evaluation = %d.", cycle_cnt);
     #5 $finish;
 end
@@ -389,34 +390,6 @@ task data2sram;
   end
 endtask	
 
-
-//display the mnist image in 28x28 SRAM
-task display_data;
-integer this_i, this_j, this_k;
-    begin
-	for(this_k=0; this_k<3;this_k = this_k +1)begin
-		$write("------------------------\n");
-        	for(this_i=0;this_i<ARRAY_SIZE;this_i=this_i+1) begin
-            		for(this_j=0;this_j<ARRAY_SIZE;this_j=this_j+1) begin
-               			$write("%d",mat1[this_i][this_j]);
-				$write(" ");
-            		end
-            		$write("\n");
-        	end
-		$write("\n");
-        	for(this_i=0;this_i<ARRAY_SIZE;this_i=this_i+1) begin
-            		for(this_j=0;this_j<ARRAY_SIZE;this_j=this_j+1) begin
-               			$write("%d",mat2[this_i][this_j]);
-				$write(" ");
-            		end
-            		$write("\n");
-        	end
-		$write("------------------------\n");
-            	$write("\n");
-	end
-    end
-endtask
-
 task golden_transform;
 integer this_i, this_j, this_k;
   begin
@@ -462,7 +435,32 @@ integer this_i, this_j, this_k;
 endtask 
 
 
+task golden_show;
+integer this_i, this_j, this_k;
+  begin
+	$write("Here shows the golden1!!!\n");
+	for(this_k=0; this_k<ARRAY_SIZE;this_k = this_k +1)begin	  
+		for(this_i=1;this_i<=ARRAY_SIZE;this_i=this_i+1) begin
+					$write("%d ", $signed(golden1[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
+			end
+		$write("\n\n");
+	end
+	$write("Here shows the golden2!!!\n");
+	for(this_k=0; this_k<ARRAY_SIZE;this_k = this_k +1)begin	  
+		for(this_i=1;this_i<=ARRAY_SIZE;this_i=this_i+1) begin
+					$write("%d ", $signed(golden2[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
+			end
+		$write("\n\n");
+	end
+	$write("Here shows the golden3!!!\n");
+	for(this_k=0; this_k<ARRAY_SIZE;this_k = this_k +1)begin	  
+		for(this_i=1;this_i<=ARRAY_SIZE;this_i=this_i+1) begin
+					$write("%d ", $signed(golden3[this_k][(this_i*OUT_DATA_WIDTH-1) -: OUT_DATA_WIDTH]));
+			end
+		$write("\n\n");
+	end
 
-
+  end
+endtask 
 
 endmodule

@@ -1,7 +1,8 @@
 //-----controller for systolic array----
 
 module systolic_controll#(
-	parameter ARRAY_SIZE = 8
+	parameter ARRAY_SIZE = 8,
+	parameter K_ACCUM_DEPTH = 8
 )
 (
 	input clk,
@@ -81,7 +82,7 @@ always@(*) begin
 		end
 
 		ROLLING: begin
-			if(matrix_index==15 && data_set == 1) begin
+			if(matrix_index == K_ACCUM_DEPTH - 1 && data_set == 2) begin	//当运算到累加深度且数据集结束时，代表所有运算结束
 				state_nx = IDLE;
 				tpu_done_nx = 1;
 			end
@@ -158,7 +159,7 @@ always@(*) begin
 			alu_start = 1;
 			cycle_num_nx = cycle_num + 1;
 			if(cycle_num >= ARRAY_SIZE + 1) begin
-				if(matrix_index == 15) begin
+				if(matrix_index == K_ACCUM_DEPTH - 1) begin
 					matrix_index_nx = 0;
 					data_set_nx = data_set + 1;
 				end
