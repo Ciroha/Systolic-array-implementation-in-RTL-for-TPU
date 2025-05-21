@@ -3,13 +3,15 @@ module systolic#(
     parameter SRAM_DATA_WIDTH = 32,
     parameter DATA_WIDTH = 8,
     // --- 显式添加累加深度参数 ---
-    parameter K_ACCUM_DEPTH = 8   // 用户可配置的累加深度，默认为原始行为 (K=8)
+    parameter K_ACCUM_DEPTH = 8,  // 用户可配置的累加深度，默认为原始行为 (K=8)
+    parameter DATA_SET = 1 //数据集的个数
 )
 (
     input clk,
     input srstn,
     input alu_start,
     input [8:0] cycle_num,     // 如果K_ACCUM_DEPTH非常大，可能需要更宽
+    input [5:0] data_set,
 
     input [SRAM_DATA_WIDTH-1:0] sram_rdata_w0,
     input [SRAM_DATA_WIDTH-1:0] sram_rdata_w1,
@@ -59,6 +61,7 @@ reg signed [DATA_WIDTH+DATA_WIDTH-1:0] mul_result; // 乘积结果位宽不变
 
 reg [5:0] upper_bound;
 reg [5:0] lower_bound;
+reg [5:0] out_row;
 
 integer i,j;
 
@@ -188,20 +191,13 @@ end
 //------output data: mul_outcome(indexed by matrix_index)------
 // (输出逻辑本身不变，但 mul_outcome 的总宽度已在模块端口处更新)
 always@(*) begin
-    if(matrix_index < ARRAY_SIZE) begin
-        upper_bound = matrix_index;
-        lower_bound = matrix_index + ARRAY_SIZE;
-    end
-    else begin
-        upper_bound = matrix_index - ARRAY_SIZE;
-        lower_bound = matrix_index;
-    end
-
     mul_outcome = 1'b0; // 默认输出为0
-    
+
+    out_row = cycle_num > K_ACCUM_DEPTH ? (cycle_num - K_ACCUM_DEPTH - 1) % ARRAY_SIZE : 0;
+
     for(i=0; i<ARRAY_SIZE; i=i+1) begin
         for(j=0; j<ARRAY_SIZE; j=j+1) begin
-            if(i == upper_bound)
+            if(i == out_row && cycle_num > K_ACCUM_DEPTH && data_set != DATA_SET)
                 mul_outcome[(j*OUTCOME_WIDTH) +: OUTCOME_WIDTH] = matrix_mul_2D[i][j];
         end
     end

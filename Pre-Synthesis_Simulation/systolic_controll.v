@@ -19,7 +19,7 @@ module systolic_controll#(
 	output reg alu_start,																//shift & multiplcation start
 	output reg [8:0] cycle_num,													//for systolic.v
 	output reg [5:0] matrix_index,													//index for write-out SRAM data
-	output reg [1:0] data_set,
+	output reg [5:0] data_set,	//TODO data_set逻辑待更改
 
 	output reg tpu_done														//done signal
 );
@@ -83,7 +83,7 @@ always@(*) begin
 		end
 
 		ROLLING: begin
-			if(matrix_index == K_ACCUM_DEPTH - 1 && data_set == DATA_SET -1) begin	//当运算到累加深度且数据集结束时，代表所有运算结束
+			if(matrix_index == K_ACCUM_DEPTH && data_set == DATA_SET -1) begin	//当运算到累加深度且数据集结束时，代表所有运算结束
 				state_nx = IDLE;
 				tpu_done_nx = 1;
 			end
@@ -160,7 +160,7 @@ always@(*) begin
 			alu_start = 1;
 			cycle_num_nx = cycle_num + 1;
 			if(cycle_num >= ARRAY_SIZE + 1) begin
-				if(matrix_index == K_ACCUM_DEPTH - 1) begin
+				if(matrix_index == K_ACCUM_DEPTH) begin
 					matrix_index_nx = 0;
 					data_set_nx = data_set + 1;
 				end

@@ -30,8 +30,8 @@ wire sram_write_enable_b1;
 
 
 wire sram_write_enable_c0;
-wire sram_write_enable_c1;
-wire sram_write_enable_c2;
+// wire sram_write_enable_c1;
+// wire sram_write_enable_c2;
 
 wire [SRAM_DATA_WIDTH-1:0] sram_rdata_a0;
 wire [SRAM_DATA_WIDTH-1:0] sram_rdata_a1;
@@ -60,16 +60,16 @@ wire [7:0] sram_wdata_a;
 wire [7:0] sram_wdata_b;
 
 wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_wdata_c0;
-wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_wdata_c1;
-wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_wdata_c2;
+// wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_wdata_c1;
+// wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_wdata_c2;
 
 wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_rdata_c0;
-wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_rdata_c1;
-wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_rdata_c2;
+// wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_rdata_c1;
+// wire [DATA_WIDTH*OUT_DATA_WIDTH-1:0] sram_rdata_c2;
 
 wire [5:0] sram_waddr_c0;
-wire [5:0] sram_waddr_c1;
-wire [5:0] sram_waddr_c2;
+// wire [5:0] sram_waddr_c1;
+// wire [5:0] sram_waddr_c2;
 
 
 
@@ -109,13 +109,13 @@ tpu_top my_tpu_top(
 	.sram_wdata_a(sram_wdata_c0),
 	.sram_waddr_a(sram_waddr_c0),
 
-	.sram_write_enable_b0(sram_write_enable_c1),
-	.sram_wdata_b(sram_wdata_c1),
-	.sram_waddr_b(sram_waddr_c1),
+	// .sram_write_enable_b0(sram_write_enable_c1),
+	// .sram_wdata_b(sram_wdata_c1),
+	// .sram_waddr_b(sram_waddr_c1),
 
-	.sram_write_enable_c0(sram_write_enable_c2),
-	.sram_wdata_c(sram_wdata_c2),
-	.sram_waddr_c(sram_waddr_c2),
+	// .sram_write_enable_c0(sram_write_enable_c2),
+	// .sram_wdata_c(sram_wdata_c2),
+	// .sram_waddr_c(sram_waddr_c2),
 
 	.tpu_done(tpu_finish)
 );
@@ -177,24 +177,24 @@ sram_16x128b sram_16x128b_c0(
 .raddr(sram_raddr_c0), 
 .rdata(sram_rdata_c0)
 );
-sram_16x128b sram_16x128b_c1(
-.clk(clk),
-.csb(1'b0),
-.wsb(sram_write_enable_c1),
-.wdata(sram_wdata_c1), 
-.waddr(sram_waddr_c1), 
-.raddr(sram_raddr_c1), 
-.rdata(sram_rdata_c1)
-);
-sram_16x128b sram_16x128b_c2(
-.clk(clk),
-.csb(1'b0),
-.wsb(sram_write_enable_c2),
-.wdata(sram_wdata_c2), 
-.waddr(sram_waddr_c2), 
-.raddr(sram_raddr_c2), 
-.rdata(sram_rdata_c2)
-);
+// sram_16x128b sram_16x128b_c1(
+// .clk(clk),
+// .csb(1'b0),
+// .wsb(sram_write_enable_c1),
+// .wdata(sram_wdata_c1), 
+// .waddr(sram_waddr_c1), 
+// .raddr(sram_raddr_c1), 
+// .rdata(sram_rdata_c1)
+// );
+// sram_16x128b sram_16x128b_c2(
+// .clk(clk),
+// .csb(1'b0),
+// .wsb(sram_write_enable_c2),
+// .wdata(sram_wdata_c2), 
+// .waddr(sram_waddr_c2), 
+// .raddr(sram_raddr_c2), 
+// .rdata(sram_rdata_c2)
+// );
 
 
 
@@ -244,11 +244,11 @@ initial begin
 end
 */
 initial begin
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat1_test.txt", mat1);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/data/mat2_test.txt", mat2);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden1_test.txt",golden1);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden2_test.txt",golden2);
-    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden3_test.txt",golden3);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/B.txt", mat1);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/A.txt", mat2);
+    $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/Out.txt",golden1);
+    // $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden2_test.txt",golden2);
+    // $readmemb("E:/IC/Systolic-array-implementation-in-RTL-for-TPU/Pre-Synthesis_Simulation/golden/golden3_test.txt",golden3);
 
     #(`cycle_period);
     
@@ -303,26 +303,26 @@ initial begin
                 end
 
 	end
-	for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
-		if(golden2[i] == sram_16x128b_c1.mem[i]) $write("sram #c1 address: %d PASS!!\n", i[5:0]);
-		else begin
-                    $write("You have wrong answer in the sram #c1 !!!\n\n");
-                    $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c1.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
-                    $write("But the golden answer is  \n%d %d %d %d \n",$signed(golden2[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
-                    $finish;
-                end
+	// for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
+	// 	if(golden2[i] == sram_16x128b_c1.mem[i]) $write("sram #c1 address: %d PASS!!\n", i[5:0]);
+	// 	else begin
+    //                 $write("You have wrong answer in the sram #c1 !!!\n\n");
+    //                 $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c1.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c1.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
+    //                 $write("But the golden answer is  \n%d %d %d %d \n",$signed(golden2[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden2[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
+    //                 $finish;
+    //             end
 
-	end
-	for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
-		if(golden3[i] == sram_16x128b_c2.mem[i]) $write("sram #c2 address: %d PASS!!\n", i[5:0]);
-		else begin
-                    $write("You have wrong answer in the sram #c2 !!!\n\n");
-                    $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c2.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
-                    $write("But the golden answer is  \n%d %d %d %d \n",$signed(golden3[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
-                    $finish;
-                end
+	// end
+	// for(i = 0; i<(ARRAY_SIZE-1); i = i+1)begin
+	// 	if(golden3[i] == sram_16x128b_c2.mem[i]) $write("sram #c2 address: %d PASS!!\n", i[5:0]);
+	// 	else begin
+    //                 $write("You have wrong answer in the sram #c2 !!!\n\n");
+    //                 $write("Your answer at address %d is \n%d %d %d %d  \n",i[5:0],$signed(sram_16x128b_c2.mem[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(sram_16x128b_c2.mem[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
+    //                 $write("But the golden answer is  \n%d %d %d %d \n",$signed(golden3[i][(ARRAY_SIZE*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-1)*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-2)*16-1)-:OUT_DATA_WIDTH]),$signed(golden3[i][((ARRAY_SIZE-3)*16-1)-:OUT_DATA_WIDTH]));
+    //                 $finish;
+    //             end
 
-	end
+	// end
     //TODO cycle_cnt逻辑有点问题
     $display("Total cycle count C after three matrix evaluation = %d.", cycle_cnt);
     #5 $finish;

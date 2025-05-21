@@ -3,7 +3,7 @@ module tpu_top#(
 	parameter SRAM_DATA_WIDTH = 32,
 	parameter DATA_WIDTH = 8,
 	parameter OUTPUT_DATA_WIDTH = 16,
-	parameter K_ACCUM_DEPTH = 24,   // 用户可配置的累加深度，默认为原始行为 (K=8)
+	parameter K_ACCUM_DEPTH = 8,   // 用户可配置的累加深度，默认为原始行为 (K=8)
 	parameter DATA_SET = 1          //数据集的个数
 )
 (
@@ -30,13 +30,13 @@ module tpu_top#(
 	output [ARRAY_SIZE*OUTPUT_DATA_WIDTH-1:0] sram_wdata_a,
 	output [5:0] sram_waddr_a,
 
-	output sram_write_enable_b0,
-	output [ARRAY_SIZE*OUTPUT_DATA_WIDTH-1:0] sram_wdata_b,
-	output [5:0] sram_waddr_b,
+	// output sram_write_enable_b0,
+	// output [ARRAY_SIZE*OUTPUT_DATA_WIDTH-1:0] sram_wdata_b,
+	// output [5:0] sram_waddr_b,
 
-	output sram_write_enable_c0,
-	output [ARRAY_SIZE*OUTPUT_DATA_WIDTH-1:0] sram_wdata_c,
-	output [5:0] sram_waddr_c,
+	// output sram_write_enable_c0,
+	// output [ARRAY_SIZE*OUTPUT_DATA_WIDTH-1:0] sram_wdata_c,
+	// output [5:0] sram_waddr_c,
 	
 	output tpu_done
 );
@@ -56,7 +56,7 @@ wire [5:0] matrix_index;
 
 //----ststolic_controll parameter---
 wire sram_write_enable;
-wire [1:0] data_set;
+wire [5:0] data_set;	//TODO 适配更多的连续累加
 
 //----write_out parameter----
 // nothing XD
@@ -106,6 +106,7 @@ systolic #(
 	.srstn(srstn),
 	.alu_start(alu_start),
 	.cycle_num(cycle_num),
+	.data_set(data_set),
 
 	.sram_rdata_w0(sram_rdata_w0),	//每列4个数据，两列同时读
 	.sram_rdata_w1(sram_rdata_w1),
@@ -153,21 +154,22 @@ write_out #(
 	.srstn(srstn),
 	.sram_write_enable(sram_write_enable),
 	.data_set(data_set),
-	.matrix_index(matrix_index),
+	// .matrix_index(matrix_index),
+	.cycle_num(cycle_num),
 	.quantized_data(quantized_data),
 
 	//output
 	.sram_write_enable_a0(sram_write_enable_a0),
 	.sram_wdata_a(sram_wdata_a),
-	.sram_waddr_a(sram_waddr_a),
+	.sram_waddr_a(sram_waddr_a)
 
-	.sram_write_enable_b0(sram_write_enable_b0),
-	.sram_wdata_b(sram_wdata_b),
-	.sram_waddr_b(sram_waddr_b),
+	// .sram_write_enable_b0(sram_write_enable_b0),
+	// .sram_wdata_b(sram_wdata_b),
+	// .sram_waddr_b(sram_waddr_b),
 
-	.sram_write_enable_c0(sram_write_enable_c0),
-	.sram_wdata_c(sram_wdata_c),
-	.sram_waddr_c(sram_waddr_c)
+	// .sram_write_enable_c0(sram_write_enable_c0),
+	// .sram_wdata_c(sram_wdata_c),
+	// .sram_waddr_c(sram_waddr_c)
 );
 
 endmodule
